@@ -23,7 +23,7 @@ class CartManager {
   async getById(id) {
     await this.#readFile();
 
-    return this.#carts.find((p) => p.id == id);
+    return this.#carts.find((c) => c.id == id);
   }
 
   //Create a new cart
@@ -35,6 +35,7 @@ class CartManager {
     const newCart = {
       id,
       ...cart,
+      products: [],
     };
 
     this.#carts.push(newCart);
@@ -45,7 +46,7 @@ class CartManager {
   }
 
   async existInCart(cart, idProduct) {
-    return cart.products.find((p) => p.id == idProduct);
+    return cart.products.find((p) => p.product == idProduct);
   }
 
   //Create a new entry in the products array for a determined cart
@@ -61,14 +62,35 @@ class CartManager {
       cart.products.pop();
     }
 
-    cart.products.id = newProduct.productId;
-    cart.products.cantidad = newProduct.cantidad;
+    if (this.#carts[cart.id - 1].products == "") {
+      this.#carts[cart.id - 1].products.pop();
+    }
+
+    cart.products = {
+      product: newProduct.productId,
+      quantity: newProduct.cantidad,
+    };
 
     this.#carts[cart.id - 1].products.push(cart.products);
 
     await this.#writeFile();
 
     return cart;
+  }
+
+  //Create a new entry in the products array for a determined cart
+  async updateProduct(cart, product) {
+    await this.#readFile();
+
+    let cantidad = cart.products[0]["quantity"] + 1;
+
+    //cart.products[0]["quantity"] = cantidad;
+
+    this.#carts[cart.id - 1].products[0]["quantity"] = cantidad;
+
+    await this.#writeFile();
+
+    return this.#carts[cart.id - 1].products[0]["quantity"];
   }
 }
 

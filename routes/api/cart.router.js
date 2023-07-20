@@ -64,20 +64,41 @@ router.post("/:cid/product/:pid", async (req, res) => {
           );
       } else {
         const existe = await cartManager.existInCart(cart, product.id);
-        const cantidad = 1; //Momentaneamente hasta hacerlo dinamico
 
         if (existe == undefined) {
+          const cantidad = 1; //Momentaneamente hasta hacerlo dinamico
+
           const productInCart = await cartManager.createProduct(
             cart,
             product.id,
             cantidad
           );
-        } else {
-        }
 
-        //   res.status(201).send(productCart);
-        //   await productManager.save(id, body);
-        //   res.sendStatus(202);
+          res
+            .status(201)
+            .send(
+              `El producto con ID ${productInCart["products"]["product"]} ha sido ingresado correctamente y su cantidad es ${productInCart["products"]["quantity"]}`
+            );
+        } else {
+          if (existe.quantity == product.stock) {
+            res
+              .status(201)
+              .send(
+                `No contamos con stock para el producto solicitado, disculpe las molestias`
+              );
+          } else {
+            const productInCart = await cartManager.updateProduct(
+              cart,
+              product.id
+            );
+
+            res
+              .status(201)
+              .send(
+                `El producto con ID ${product.id} ha sido actualizado correctamente y su cantidad es ${productInCart}`
+              );
+          }
+        }
       }
     }
   } catch (e) {
